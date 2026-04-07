@@ -51,7 +51,7 @@ function AiChatPanel({ chatLog, msg, loading, setMsg, onSend, fullPage = false }
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-slate-800">Trợ lý AI (OpenClaw)</p>
-          <p className="text-xs text-blue-500 font-medium italic">Gemini 2.5 Pro • Đang đồng bộ Telegram</p>
+          <p className="text-xs text-blue-500 font-medium italic">Gemini 2.0 Flash • Đang đồng bộ Telegram</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -140,7 +140,7 @@ export default function App() {
   const [bootstrapPassword, setBootstrapPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authMessage, setAuthMessage] = useState('');
-  const [chatLog, setChatLog] = useState<Array<{ role: string; text: string }>>([{ role: 'ai', text: 'Chào bạn! Tôi là Trợ lý AI được vận hành bởi Gemini 2.5 Pro qua OpenClaw. Tôi đã sẵn sàng hỗ trợ bạn!' }]);
+  const [chatLog, setChatLog] = useState<Array<{ role: string; text: string }>>([{ role: 'ai', text: 'Chào bạn! Tôi là Trợ lý AI được vận hành bởi Gemini 2.0 Flash qua OpenClaw. Tôi đã sẵn sàng hỗ trợ bạn!' }]);
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [dynamicMetrics, setDynamicMetrics] = useState<any>(null);
