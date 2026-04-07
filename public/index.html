@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tra cứu VHKT-NOC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+<div class="background-mesh"></div>
+
+<!-- Nút mở menu -->
+<div class="toggle-btn" id="toggleBtn">☰</div>
+
+<!-- Nút help -->
+<button class="help-btn" id="helpBtn">❔</button>
+
+<!-- Tooltip help -->
+<div class="help-tooltip" id="helpTooltip">
+  <div class="guide-shell guide-shell-tooltip">
+    <div class="guide-shell__header">
+      <p class="guide-shell__eyebrow">Hướng dẫn nhanh</p>
+      <strong>Danh mục chức năng</strong>
+    </div>
+    <div id="helpGuideContent" class="guide-layout"></div>
+  </div>
+</div>
+
+<!-- Trang hướng dẫn ban đầu -->
+<div id="homeContent" class="content-section">
+  <section class="hero-panel">
+    <p class="hero-panel__eyebrow">Tra cứu VHKT - NOC</p>
+    <h1 class="hero-panel__title">Các chức năng được nhóm lại để dễ tìm và dễ thao tác hơn.</h1>
+    <p class="hero-panel__desc">Nhấn ☰ để mở menu, hoặc ❔ để xem nhanh hướng dẫn trong lúc làm việc.</p>
+  </section>
+
+  <div id="homeGuideContent" class="guide-layout"></div>
+</div>
+
+<template id="guideSectionsTemplate">
+  <section class="guide-card">
+    <h3 class="guide-card__title">Trúng/Trả thưởng - Rút tiền</h3>
+    <div class="guide-group">
+      <h4 class="guide-group__title">Lập lệnh</h4>
+      <ul class="guide-list">
+        <li><strong>Lệnh trả thưởng:</strong> Thống kê lệnh trả thưởng trạng thái đang chờ phê duyệt.</li>
+        <li><strong>Lệnh rút tiền:</strong> Thống kê lệnh rút tiền trạng thái đang chờ phê duyệt.</li>
+      </ul>
+    </div>
+    <div class="guide-group">
+      <h4 class="guide-group__title">Trả thưởng</h4>
+      <ul class="guide-list">
+        <li><strong>Nguyên nhân trả thưởng lỗi:</strong> Tra cứu nguyên nhân trả thưởng lỗi trong bảng <b>reward_transaction</b>.</li>
+        <li><strong>Tra cứu mã lập lệnh trả thưởng:</strong> Tra cứu mã lập lệnh trả thưởng.</li>
+        <li><strong>Thống kê tổng tiền trả thưởng:</strong> Thống kê tổng tiền cần trả thưởng cho game 535.</li>
+        <li><strong>Check trả thưởng ViettelPay trạng thái WAIT_DISB:</strong> Kiểm tra số lượng và số tiền trả thưởng ViettelPay trạng thái WAIT_DISB.</li>
+      </ul>
+    </div>
+    <div class="guide-group">
+      <h4 class="guide-group__title">Rút tiền</h4>
+      <ul class="guide-list">
+        <li><strong>Nguyên nhân lỗi rút tiền:</strong> Tra cứu nguyên nhân lỗi rút tiền.</li>
+        <li><strong>Check trạng thái rút tiền:</strong> Upload file GD rút tiền VHNV cần check trạng thái, sau khi check xong trạng thái tải file về gửi cho VHNV.</li>
+        <li><strong>Xuất danh sách rút tiền:</strong> Xuất file các GD rút tiền theo yêu cầu của VHNV.</li>
+      </ul>
+    </div>
+    <div class="guide-group">
+      <h4 class="guide-group__title">Trúng thưởng</h4>
+      <ul class="guide-list">
+        <li><strong>Tra cứu trúng thưởng:</strong> Tra cứu trạng thái trả thưởng trong bảng <b>winning_result</b> và xuất file CSV theo yêu cầu của VHNV.</li>
+        <li><strong>Check file trúng thưởng:</strong> Kiểm tra file trúng thưởng.</li>
+        <li><strong>Thống kê MT trúng thưởng:</strong> Thống kê số lượng MT trúng thưởng.</li>
+        <li><strong>Check MT trúng thưởng game 535:</strong> Kiểm tra số lượng MT gửi trúng thưởng game 535.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="guide-card">
+    <h3 class="guide-card__title">HMDT - HMBH</h3>
+    <ul class="guide-list">
+      <li><strong>Xuất danh sách HMDT:</strong> Xuất file chi tiết các GD biến động số dư HMDT của khách hàng.</li>
+      <li><strong>Check block HMDT:</strong> Kiểm tra trạng thái block HMDT.</li>
+      <li><strong>HMBH:</strong> Kiểm tra HMBH hiện tại của các site.</li>
+      <li><strong>Check tăng HMBH:</strong> Upload file GD trả thưởng VHNV gửi, tra cứu trạng thái trúng thưởng và tăng HMBH rồi tải file xuống.</li>
+    </ul>
+  </section>
+
+  <section class="guide-card">
+    <h3 class="guide-card__title">Đối soát</h3>
+    <ul class="guide-list">
+      <li><strong>Đối soát VNPAY:</strong> Tải file từ email, import dữ liệu, chạy đối soát từng site và tự động upload lên OneDrive.</li>
+      <li><strong>Đối soát MoMo:</strong> Đối soát giao dịch thanh toán qua MoMo.</li>
+      <li><strong>Đối soát ViettelPay:</strong> Đối soát giao dịch thanh toán qua ViettelPay.</li>
+      <li><strong>Đối soát ZaloPay:</strong> Đối soát giao dịch thanh toán qua ZaloPay.</li>
+    </ul>
+  </section>
+
+  <section class="guide-card">
+    <h3 class="guide-card__title">Kết quả Jackpot</h3>
+    <ul class="guide-list">
+      <li><strong>Jackpot ước tính:</strong> So sánh giá trị Jackpot so với trang chủ Vietlott.</li>
+      <li><strong>Jackpot kết quả:</strong> So sánh giá trị kết quả so với trang chủ Vietlott.</li>
+      <li><strong>Thông tin khách hàng trúng Jackpot:</strong> Tra cứu thông tin khách hàng trúng Jackpot.</li>
+    </ul>
+  </section>
+
+  <section class="guide-card">
+    <h3 class="guide-card__title">Tra soát - Thống kê</h3>
+    <ul class="guide-list">
+      <li><strong>Kênh thanh toán mua vé:</strong> Kiểm tra kênh thanh toán mua vé.</li>
+      <li><strong>Thống kê cấu hình kỳ quay:</strong> Thống kê cấu hình kỳ quay.</li>
+      <li><strong>Thống kê tam hoa ngày T-1:</strong> Thống kê tam hoa ngày hôm trước.</li>
+      <li><strong>Check hệ thống sau khi chuyển PDC-DRC:</strong> Kiểm tra hệ thống sau chuyển đổi.</li>
+      <li><strong>Tra cứu SMS của khách hàng:</strong> Kiểm tra SMS trong hệ thống.</li>
+      <li><strong>Check phân quyền tài khoản web admin:</strong> Nhấn nút <b>Truncate & Insert</b> để cập nhật bảng ROLE_BK, sau đó dùng <b>Check quyền sau khi update</b> để đối chiếu thay đổi quyền.</li>
+      <li><strong>Check trạng thái vé VNPAY:</strong> Tải file VHNV gửi trong group, import file và chạy đối soát tự động gửi file lên GG Chat.</li>
+    </ul>
+  </section>
+</template>
+
+<!-- Ứng dụng chính -->
+<div class="app">
+  <aside class="navbar hidden" id="navbar">
+    <button type="button" class="nav-title nav-title-btn" id="menuHomeBtn">Menu</button>
+    <div id="navButtons">Đang tải menu...</div>
+  </aside>
+
+  <div id="top-bar" class="top-bar">
+      <button id="back-btn" class="back-btn" onclick="if(window.currentCategory) showCategoryDashboard(window.currentCategory)">
+          &larr; Quay lại
+      </button>
+  </div>
+  <main id="content" class="content-section"></main>
+</div>
+
+<!-- Overlay riêng cho MENU -->
+<div class="overlay" id="menuOverlay"></div>
+
+<!-- Overlay riêng cho HELP -->
+<div class="overlay" id="helpOverlay"></div>
+
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script src="/script/api.js"></script>
+<script src="/script/reward.js"></script>
+<script src="/script/error.js"></script>
+<script src="/script/command.js"></script>
+<script src="/script/payreward.js"></script>
+<script src="/script/payment.js"></script>
+<script src="/script/hmdt.js"></script>
+<script src="/script/vnpay.js"></script>
+<script src="/script/vnpay3.js"></script>
+<script src="/script/script247.js"></script>
+<script src="/script/inforwinner.js"></script>
+<script src="/script/vpbankneo.js"></script>
+<script src="/script/mqtneo.js"></script>
+<script src="/script/withdraw.js"></script>
+<script src="/script/checkwithdraw.js"></script>
+<script src="/script/export_withdraw.js"></script>
+<script src="/script/block_hmdt.js"></script>
+<script src="/script/mbbank.js"></script>
+<script src="/script/sms.js"></script>
+<script src="/script/ncb.js"></script>
+<script src="/script/role.js"></script>
+<script src="/script/guide.js"></script>
+<script src="/script/menu.js"></script>
+<script src="/script/help.js"></script>
+
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'NAVIGATE_CATEGORY') {
+      document.body.classList.add('headless-mode');
+      const menu = (typeof menus !== 'undefined') ? menus.find(m => m.name === e.data.categoryName) : null;
+      if (menu) {
+        showCategoryDashboard(menu);
+      }
+    } else if (e.data && e.data.type === 'RUN_TASK') {
+      document.body.classList.add('headless-mode');
+      if (typeof window.handleMenu === 'function') {
+        window.handleMenu(e.data.taskId);
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
