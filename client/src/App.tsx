@@ -38,9 +38,28 @@ const getRole = (session: Session | null): Role => {
 const getAllowedCategories = (session: Session | null) => Array.isArray(session?.user?.user_metadata?.allowed_categories) ? session?.user?.user_metadata?.allowed_categories : [];
 const getAllowedTasks = (session: Session | null) => Array.isArray(session?.user?.user_metadata?.allowed_tasks) ? session?.user?.user_metadata?.allowed_tasks : [];
 
+const renderMarkdown = (text: string) => {
+  return text.split('\n').map((line, idx) => (
+    <span key={idx} className="block min-h-[1em]">
+      {line.split(/(\*\*.*?\*\*)/g).map((chunk, i) => {
+        if (chunk.startsWith('**') && chunk.endsWith('**')) {
+          return <strong key={i} className="font-bold">{chunk.slice(2, -2)}</strong>;
+        }
+        return <span key={i}>{chunk}</span>;
+      })}
+    </span>
+  ));
+};
+
 function AiChatPanel({ chatLog, msg, loading, setMsg, onSend, fullPage = false }: { chatLog: Array<{ role: string; text: string }>; msg: string; loading: boolean; setMsg: (value: string) => void; onSend: () => void; fullPage?: boolean }) {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatLog, loading]);
+
 
   return (
     <div className={`flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden w-full ${fullPage ? 'h-[calc(100vh-9rem)]' : 'h-[430px]'}`}>
@@ -51,7 +70,7 @@ function AiChatPanel({ chatLog, msg, loading, setMsg, onSend, fullPage = false }
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-slate-800">Trợ lý AI (OpenClaw)</p>
-          <p className="text-xs text-blue-500 font-medium italic">Gemini 2.0 Flash • Đang đồng bộ Telegram</p>
+          <p className="text-xs text-blue-500 font-medium italic">Llama 3.3 70B (Groq) • Miễn phí • Nhanh</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -66,7 +85,7 @@ function AiChatPanel({ chatLog, msg, loading, setMsg, onSend, fullPage = false }
             <div key={i} className="flex justify-end gap-2">
               <div className="flex flex-col items-end gap-1 max-w-[78%]">
                 <div className="bg-blue-600 text-white text-sm px-4 py-2.5 rounded-2xl rounded-br-sm shadow-sm leading-relaxed">
-                  {c.text}
+                  {renderMarkdown(c.text)}
                 </div>
                 <span className="text-[10px] text-slate-400">{timeStr}</span>
               </div>
@@ -79,7 +98,7 @@ function AiChatPanel({ chatLog, msg, loading, setMsg, onSend, fullPage = false }
               </div>
               <div className="flex flex-col gap-1 max-w-[78%]">
                 <div className="bg-white text-slate-700 text-sm px-4 py-2.5 rounded-2xl rounded-bl-sm shadow-sm border border-slate-100 leading-relaxed">
-                  {c.text}
+                  {renderMarkdown(c.text)}
                 </div>
                 <span className="text-[10px] text-slate-400 ml-1">{timeStr}</span>
               </div>
@@ -98,17 +117,24 @@ function AiChatPanel({ chatLog, msg, loading, setMsg, onSend, fullPage = false }
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input bar */}
       <div className="px-4 py-3 border-t border-slate-100 bg-white shrink-0">
         <div className="flex items-center gap-2 bg-slate-100 rounded-2xl px-4 py-2">
-          <input
+          <textarea
             value={msg}
             onChange={e => setMsg(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && onSend()}
-            className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
-            placeholder="Nhập tin nhắn..."
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                onSend();
+              }
+            }}
+            rows={Math.min(msg.split('\n').length || 1, 10)}
+            className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none px-1 py-1 min-h-[24px] max-h-[250px] overflow-y-auto"
+            placeholder="Nhập tin nhắn (Shift + Enter để xuống dòng)..."
           />
           <button
             title="Gửi"
@@ -140,7 +166,7 @@ export default function App() {
   const [bootstrapPassword, setBootstrapPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authMessage, setAuthMessage] = useState('');
-  const [chatLog, setChatLog] = useState<Array<{ role: string; text: string }>>([{ role: 'ai', text: 'Chào bạn! Tôi là Trợ lý AI được vận hành bởi Gemini 2.0 Flash qua OpenClaw. Tôi đã sẵn sàng hỗ trợ bạn!' }]);
+  const [chatLog, setChatLog] = useState<Array<{ role: string; text: string }>>([{ role: 'ai', text: 'Chào bạn! Tôi là Trợ lý AI vận hành bởi Llama 3.3 70B (Groq). Tôi đã sẵn sàng hỗ trợ bạn!' }]);
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [dynamicMetrics, setDynamicMetrics] = useState<any>(null);
