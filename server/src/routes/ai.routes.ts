@@ -5,13 +5,13 @@ import { adminSupabase } from "../db/supabase";
 const router = Router();
 
 router.post("/chat", async (req, res) => {
-  const { message } = req.body;
+  const { message, provider } = req.body;
   if (!message) {
     return res.status(400).json({ error: "Missing message" });
   }
 
-  const reply = await askAssistant(message);
-  res.json({ reply });
+  const result = await askAssistant(message, provider);
+  res.json(result);
 });
 
 router.post("/sentiment", async (req, res) => {

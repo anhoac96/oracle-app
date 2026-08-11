@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const path = require('path');  
 const fs = require('fs');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config();
+
 
 const queryRoutes = require('./data/tra-thuong'); 
 const hmdt = require('./data/hmdt'); 
@@ -31,11 +34,42 @@ const checkncb = require('./data/tkncb');
 const app = express();
 const PORT = 5000;
 
+// ✅ [SECURITY] CORS chỉ cho phép các origin hợp lệ (localhost và IP nội bộ)
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://localhost:5001',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+];
+
 app.use(cors({
-  origin: "*", // allow any origin or simply restrict to localhost if preferred. For local dev "*" is often fine or "http://localhost:5000"
-  methods: ["GET","POST","OPTIONS"],
-  allowedHeaders: ["Content-Type"]
+  origin: function(origin, callback) {
+    // Cho phép request không có origin (curl, Postman nội bộ)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS: Origin không được phép.'));
+    }
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "x-internal-token"],
+  credentials: true,
 }));
+
+// ✅ [SECURITY] Rate Limiting - chống brute-force và DoS
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 phút
+  max: 60, // tối đa 60 request/phút/IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.' },
+  skip: (req) => req.path === '/favicon.ico', // bỏ qua favicon
+});
+
+app.use(apiLimiter);
+
 
 app.use(bodyParser.json());
 

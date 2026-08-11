@@ -1,17 +1,39 @@
 // data/script.js
 const express = require('express');
 const { NodeSSH } = require('node-ssh');
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+require('dotenv').config();
 const ssh = new NodeSSH();
 
-const router = express.Router(); 
+const router = express.Router();
 
-
+// ✅ [SECURITY] SSH config đọc từ biến môi trường, KHÔNG hardcode
 const SSH_CONFIG = {
-  host: '172.16.13.103',
-  username: 'root',
-  port: 22,
-  password: 'noc@2021'
+  host: process.env.SSH_HOST,
+  username: process.env.SSH_USER || 'root',
+  port: parseInt(process.env.SSH_PORT || '22'),
+  password: process.env.SSH_PASSWORD,
 };
+
+if (!SSH_CONFIG.host || !SSH_CONFIG.password) {
+  console.warn('⚠️ [SECURITY] SSH_HOST hoặc SSH_PASSWORD chưa được cấu hình trong .env');
+}
+
+// ✅ [SECURITY] Middleware xác thực internal API token
+function requireInternalToken(req, res, next) {
+  const INTERNAL_TOKEN = process.env.INTERNAL_API_TOKEN;
+  if (!INTERNAL_TOKEN) {
+    // Nếu chưa cấu hình token → block toàn bộ để an toàn
+    return res.status(503).json({ success: false, error: 'Endpoint chưa được cấu hình bảo mật. Liên hệ admin.' });
+  }
+
+  const token = req.headers['x-internal-token'] || req.headers['authorization']?.replace('Bearer ', '');
+  if (!token || token !== INTERNAL_TOKEN) {
+    console.warn(`[SECURITY] Truy cập /run-script bị từ chối. IP: ${req.ip}`);
+    return res.status(401).json({ success: false, error: 'Unauthorized: Token không hợp lệ.' });
+  }
+  next();
+}
 
 const SCRIPTS = { 
   laplenhlandau: '/root/noc/laplenhlandau/bc_lenh_tt.sh',
@@ -60,17 +82,17 @@ async function runRemoteScript(scriptName) {
 }
 
 
-// ✅ Route chính
-router.post('/run-script', async (req, res) => {
+// ✅ Route chính - BẮT BUỘC có token xác thực
+router.post('/run-script', requireInternalToken, async (req, res) => {
   try {
     const { script } = req.body || {};
-    console.log(`📩 Nhận yêu cầu chạy script: ${script}`);
+    console.log(`📩 [${req.ip}] Nhận yêu cầu chạy script: ${script}`);
 
     const result = await runRemoteScript(script);
     res.status(result.success ? 200 : 500).json(result);
   } catch (err) {
     console.error('❌ Lỗi không mong muốn:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Lỗi server nội bộ.' });
   }
 });
 

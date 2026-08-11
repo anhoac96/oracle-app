@@ -4,6 +4,11 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "dev:all": "start cmd /k node app.js && start cmd /k \"cd /d server && npm run dev\" && start cmd /k \"cd /d client && npm run dev\"",
+    "open:app": "powershell -ExecutionPolicy Bypass -File open-app.ps1",
+    "restart:all": "powershell -ExecutionPolicy Bypass -File restart-all.ps1",
+    "status:all": "powershell -ExecutionPolicy Bypass -File status-all.ps1",
+    "stop:all": "powershell -ExecutionPolicy Bypass -File stop-all.ps1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -17,8 +22,10 @@
     "cors": "^2.8.5",
     "csv-parser": "^3.2.0",
     "csv-writer": "^1.6.0",
+    "dotenv": "^17.4.2",
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.3.2",
     "form-data": "^4.0.4",
     "json2csv": "^6.0.0-alpha.2",
     "moment": "^2.30.1",
